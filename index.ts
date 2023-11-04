@@ -49,7 +49,6 @@ app.use(function (req, res, next) {
 // Routes
 app.use("/api/users", userRouter);
 app.use("/api/organisations", orgRouter);
-app.get("/sessions/oauth/google", googleOauthHandler);
 app.use("/api/projects", projectRouter);
 app.use("/api/leaderboard", LeaderBoardRouter);
 

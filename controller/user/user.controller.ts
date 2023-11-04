@@ -149,7 +149,6 @@ const isLoggedIn = asyncHandler(async (req: any, res: any, next: any) => {
     address: user.address,
     tshirtSize: user.tshirtSize,
     isAdmin: user.isAdmin,
-    isLoggedIn: true,
   });
 });
 

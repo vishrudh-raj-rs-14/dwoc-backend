@@ -19,7 +19,7 @@ const restrictToOwner = asyncHandler(async (req: any, res: any, next: any) => {
 });
 
 const createOrganisation = asyncHandler(async (req: any, res: any) => {
-  if (req.user.isOrg) {
+  if (req.user.isOrg && req.user.isFilled) {
     res.status(400);
     throw new Error("You already own an organisation");
   }

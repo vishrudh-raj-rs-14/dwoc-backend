@@ -21,6 +21,7 @@ userRouter.put("/register", protect, register);
 userRouter.put("/profile/:userId", protect, updateProfile);
 
 userRouter.get("/getGoogleOauthURL", getGoogleOauthURL);
+userRouter.post("/oauth/google", googleOauthHandler);
 
 // userRouter.get("/:userId", protect, getUserData);
 

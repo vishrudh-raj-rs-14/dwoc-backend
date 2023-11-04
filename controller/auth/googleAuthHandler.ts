@@ -74,7 +74,7 @@ const findAndUpdateUser = async (query: any, update: any, options: any) => {
 
 const googleOauthHandler = async (req: any, res: any, next: any) => {
   try {
-    const code = req.query.code;
+    const code = req.body.code;
 
     const { id_token, access_token } = await getGoogleOauthTokens(code);
 
@@ -86,27 +86,37 @@ const googleOauthHandler = async (req: any, res: any, next: any) => {
         message: "google account is not verified",
       });
     }
-    const user = await findAndUpdateUser(
-      {
-        email: googleUser.email,
-      },
-      {
-        email: googleUser.email,
-        name: googleUser.name,
-      },
-      {
-        upsert: true,
-        new: true,
-      }
-    );
-    CreateAndSendToken(user, 200, res);
-    res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
-    console.log(user);
+    const user = await User.findOne({ email: googleUser.email });
+    if (user) {
+      res.status(409);
+      return next(new Error("User already exists"));
+    }
+    const newUser = await User.create({
+      email: googleUser.email,
+      name: googleUser.name,
+      isOrg: req.body.role === "ORGANIZATION" ? true : false,
+    });
 
-    // res.status(200).json({
-    //   status: "success",
-    //   message: "Google auth working",
-    // });
+    // const user = await findAndUpdateUser(
+    //   {
+    //     email: googleUser.email,
+    //   },
+    //   {
+    //     email: googleUser.email,
+    //     name: googleUser.name,
+    //     isOrg: req.body.role === "ORGANIZATION" ? true : false,
+    //   },
+    //   {
+    //     upsert: true,
+    //     new: true,
+    //   }
+    // );
+    CreateAndSendToken(newUser, 200, res);
+
+    res.status(200).json({
+      status: "success",
+      user: newUser,
+    });
   } catch (err) {
     console.log(err);
     res.status(404).json({

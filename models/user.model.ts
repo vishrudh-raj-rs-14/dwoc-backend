@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
   githubHandle: {
     type: String,
   },
-  isMentor: {
+  isOrg: {
     type: Boolean,
     default: false,
   },
@@ -22,17 +22,30 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
   phone: {
-    type: String,
+    type: Number,
+    validate: {
+      validator: function (v: string) {
+        // Use a regular expression to check if the phone number is exactly 10 digits
+        return /^\d{10}$/.test(v);
+      },
+      message: (props: { value: string }) =>
+        `${props.value} is not a valid 10-digit phone number!`,
+    },
   },
   address: {
     type: String,
   },
   tshirtSize: {
     type: String,
+    enum: ["XS", "S", "M", "L", "XL", "XXL", "XXXL", "XXXXL", "XXXXXL"],
   },
   isAdmin: {
     type: Boolean,
     default: false,
+  },
+  score: {
+    type: Number,
+    default: 0,
   },
 });
 

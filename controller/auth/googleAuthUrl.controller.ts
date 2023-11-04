@@ -7,7 +7,6 @@ const qs = require("qs");
 
 const getGoogleOauthURL = (req: any, res: any, next: any) => {
   const rootUrl = "https://accounts.google.com/o/oauth2/v2/auth";
-
   const options: any = {
     redirect_uri: process.env.GOOGLE_REDIRECT_URL,
     client_id: process.env.CLIENT_ID_GOOGLE_OAUTH,
@@ -22,9 +21,10 @@ const getGoogleOauthURL = (req: any, res: any, next: any) => {
 
   const qs = new URLSearchParams(options);
 
-  res.redirect(`${rootUrl}?${qs.toString()}`);
+  // res.redirect(`${rootUrl}?${qs.toString()}`);
   res.status(200).json({
     status: "success",
+    url: `${rootUrl}?${qs.toString()}`,
   });
 };
 

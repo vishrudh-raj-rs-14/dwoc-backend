@@ -24,7 +24,7 @@ const CreateAndSendToken = (user: any, statusCode: Number, res: any) => {
   };
 
   //   if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
-  res.cookie("jwt", token, cookieOptions);
+  res.cookie("dwocToken", token, cookieOptions);
 
   user.password = undefined;
 };
@@ -100,14 +100,15 @@ const googleOauthHandler = async (req: any, res: any, next: any) => {
       }
     );
     CreateAndSendToken(user, 200, res);
-    // res.redirect("/");
+    res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
     console.log(user);
 
-    res.status(200).json({
-      status: "success",
-      message: "Google auth working",
-    });
+    // res.status(200).json({
+    //   status: "success",
+    //   message: "Google auth working",
+    // });
   } catch (err) {
+    console.log(err);
     res.status(404).json({
       status: "fail",
       message: err,

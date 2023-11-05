@@ -1,5 +1,17 @@
 import mongoose, { model } from "mongoose";
 
+const assignedOrgsSchema = new mongoose.Schema({
+  title: {
+    type: String,
+  },
+  repoLink: {
+    type: String,
+  },
+  issueLink: {
+    type: String,
+  },
+});
+
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -46,6 +58,9 @@ const userSchema = new mongoose.Schema({
   score: {
     type: Number,
     default: 0,
+  },
+  assignedOrgs: {
+    type: [assignedOrgsSchema],
   },
 });
 

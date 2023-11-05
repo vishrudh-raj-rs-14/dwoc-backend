@@ -32,14 +32,14 @@ const protect = asyncHandler(async (req: any, res: any, next: any) => {
   }
   const decoded: any = await jwtVerifyPromisified(
     token,
-    process.env.JWT_SECRET as string
+    process.env.JWT_SECRET as string,
   );
   console.log(decoded);
-  const user = await User.findById(decoded.id).lean();
+  const user = await User.findById(decoded.id);
   if (!user) {
     res.status(401);
     return next(
-      new Error("The user with this credentials does not exist anymore")
+      new Error("The user with this credentials does not exist anymore"),
     );
   }
   req.user = user;
@@ -76,7 +76,7 @@ const register = asyncHandler(async (req: any, res: any, next: any) => {
     !req.body.phone,
     !req.body.address,
     !req.body.tshirtSize,
-    req.body.isOrg
+    req.body.isOrg,
   );
   if (
     !req.body.githubHandle ||
@@ -103,7 +103,7 @@ const register = asyncHandler(async (req: any, res: any, next: any) => {
     {
       new: true,
       runValidators: true,
-    }
+    },
   );
 
   return res.json(newUser);
@@ -169,7 +169,7 @@ const updateProfile = asyncHandler(async (req: any, res: any, next: any) => {
     {
       new: true,
       runValidators: true,
-    }
+    },
   );
 
   return res.json(newUser);
@@ -182,7 +182,7 @@ const generateMockUsers = asyncHandler(
     return res.json({
       status: "success",
     });
-  }
+  },
 );
 
 export {

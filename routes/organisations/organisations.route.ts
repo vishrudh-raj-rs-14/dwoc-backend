@@ -18,6 +18,6 @@ orgRouter.post(
   "/projects",
   protect,
   restrictToOwner,
-  createOrganisationProject
+  createOrganisationProject,
 );
 export default orgRouter;

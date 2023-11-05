@@ -47,7 +47,7 @@ const createOrganisation = asyncHandler(async (req: any, res: any) => {
   const user = await User.findByIdAndUpdate(
     String(req.user._id),
     { isOrg: true },
-    { new: true }
+    { new: true },
   );
   return res.status(201).json({
     status: "success",
@@ -99,7 +99,7 @@ const getOrganisationProjects = asyncHandler(
         organisations,
       },
     });
-  }
+  },
 );
 
 const createOrganisationProject = asyncHandler(
@@ -108,8 +108,8 @@ const createOrganisationProject = asyncHandler(
       res.status(401);
       return next(
         new Error(
-          "You are not authorized to perform this action as your organization is not yet verified"
-        )
+          "You are not authorized to perform this action as your organization is not yet verified",
+        ),
       );
     }
     const project = await Project.create({
@@ -127,7 +127,7 @@ const createOrganisationProject = asyncHandler(
         project,
       },
     });
-  }
+  },
 );
 
 export {

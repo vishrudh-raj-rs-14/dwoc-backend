@@ -17,7 +17,7 @@ const CreateAndSendToken = (user: any, statusCode: Number, res: any) => {
   const cookieOptions = {
     expires: new Date(
       Date.now() +
-        Number(process.env.JWT_COOKIE_EXPIRES_IN) * 24 * 60 * 60 * 1000
+        Number(process.env.JWT_COOKIE_EXPIRES_IN) * 24 * 60 * 60 * 1000,
     ),
 
     httpOnly: true,
@@ -59,7 +59,7 @@ const getGoogleUser = async ({ id_token, access_token }: any) => {
         header: {
           Authorization: `Bearer ${id_token}`,
         },
-      }
+      },
     );
 
     return res.data;

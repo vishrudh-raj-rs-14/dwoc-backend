@@ -46,8 +46,8 @@ const createOrganisation = asyncHandler(async (req: any, res: any) => {
   const organisation = await newOrganisation.save();
   const user = await User.findByIdAndUpdate(
     String(req.user._id),
-    { isOrg: true },
-    { new: true },
+    { isFilled: true },
+    { new: true }
   );
   return res.status(201).json({
     status: "success",
@@ -69,37 +69,28 @@ const getAllOrganisations = asyncHandler(async (req: any, res: any) => {
 });
 
 const getOrganisation = asyncHandler(async (req: any, res: any, next: any) => {
-  const organisation = await Organisation.findById(req.params.id);
+  const organisation = await Organisation.findOne({ orgOwner: req.user._id });
   if (!organisation) {
     res.status(404);
-    return next(new Error("No such organisation found"));
+    return next(new Error("You don't own any organisation"));
   }
   return res.status(201).json({
     status: "success",
-    data: {
-      organisation,
-    },
+    organisation,
   });
 });
 
 const getOrganisationProjects = asyncHandler(
   async (req: any, res: any, next: any) => {
-    const organisation = await Organisation.findById(req.params.id);
-    if (!organisation) {
-      res.status(404);
-      return next(new Error("No such organisation found"));
-    }
-    const organisations = await Project.find({
-      organisation: new mongoose.Types.ObjectId(req.params.id),
-    });
+    const projects = await Project.find({
+      organisation: new mongoose.Types.ObjectId(req.organisation._id),
+    }).populate("organisation");
 
     return res.status(201).json({
       status: "success",
-      data: {
-        organisations,
-      },
+      projects,
     });
-  },
+  }
 );
 
 const createOrganisationProject = asyncHandler(
@@ -108,10 +99,27 @@ const createOrganisationProject = asyncHandler(
       res.status(401);
       return next(
         new Error(
-          "You are not authorized to perform this action as your organization is not yet verified",
-        ),
+          "You are not authorized to perform this action as your organization is not yet verified"
+        )
       );
     }
+    if (
+      !req.body.name ||
+      !req.body.techStack ||
+      !req.body.description ||
+      !req.body.miniDescription ||
+      !req.body.tags ||
+      !req.body.githubUrl
+    ) {
+      res.status(400);
+      return next(new Error("Please fill all the fields"));
+    }
+
+    if (req.body.githubUrl.startsWith("https://github.com/") === false) {
+      res.status(400);
+      return next(new Error("Please enter a valid github url"));
+    }
+
     const project = await Project.create({
       name: req.body.name,
       organisation: req.organisation.id,
@@ -128,7 +136,27 @@ const createOrganisationProject = asyncHandler(
         project,
       },
     });
-  },
+  }
+);
+
+const deleteOrganisationProject = asyncHandler(
+  async (req: any, res: any, next: any) => {
+    if (req.organisation.isAccepted !== "ACCEPTED") {
+      res.status(401);
+      return next(
+        new Error(
+          "You are not authorized to perform this action as your organization is not yet verified"
+        )
+      );
+    }
+
+    await Project.deleteOne({
+      _id: req.params.id,
+    });
+    return res.status(201).json({
+      status: "success",
+    });
+  }
 );
 
 export {
@@ -138,4 +166,5 @@ export {
   getOrganisationProjects,
   createOrganisationProject,
   restrictToOwner,
+  deleteOrganisationProject,
 };

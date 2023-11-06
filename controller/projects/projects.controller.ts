@@ -3,7 +3,7 @@ import Organisation from "../../models/organization.model";
 import Project from "../../models/project.model";
 
 const getAllProjects = expressAsyncHandler(async (req: any, res: any) => {
-  const projects = await Project.find();
+  const projects = await Project.find().populate("organisation");
 
   return res.status(201).json({
     status: "success",

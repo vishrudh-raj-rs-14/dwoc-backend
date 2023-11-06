@@ -2,7 +2,6 @@ import asyncHandler from "express-async-handler";
 import User from "../../models/user.model";
 import { generateMockUserData } from "../../utils/faker";
 import jwt from "jsonwebtoken";
-import { promisify } from "util";
 
 const jwtVerifyPromisified = (token: string, secret: string) => {
   return new Promise((resolve, reject) => {
@@ -188,6 +187,16 @@ const generateMockUsers = asyncHandler(
   },
 );
 
+const logout = asyncHandler(async (req: any, res: any, next: any) => {
+  res.cookie("dwocToken", "", {
+    expires: new Date(Date.now() + 0),
+    httpOnly: true,
+  });
+  return res.json({
+    status: "success",
+  });
+});
+
 export {
   protect,
   getUserData,
@@ -196,4 +205,5 @@ export {
   register,
   generateMockUsers,
   isLoggedIn,
+  logout,
 };

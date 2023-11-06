@@ -87,15 +87,22 @@ const googleOauthHandler = async (req: any, res: any, next: any) => {
       });
     }
     const user = await User.findOne({ email: googleUser.email });
-    if (user) {
+    if (user && req.body.type == "signup") {
       res.status(409);
       return next(new Error("User already exists"));
     }
-    const newUser = await User.create({
-      email: googleUser.email,
-      name: googleUser.name,
-      isOrg: req.body.role === "ORGANIZATION" ? true : false,
-    });
+    if (!user && req.body.type == "login") {
+      res.status(409);
+      return next(new Error("Sign Up before Logging In"));
+    }
+    let newUser = user;
+    if (req.body.type == "signup") {
+      newUser = await User.create({
+        email: googleUser.email,
+        name: googleUser.name,
+        isOrg: req.body.role === "ORGANIZATION" ? true : false,
+      });
+    }
 
     // const user = await findAndUpdateUser(
     //   {
@@ -111,6 +118,7 @@ const googleOauthHandler = async (req: any, res: any, next: any) => {
     //     new: true,
     //   }
     // );
+
     CreateAndSendToken(newUser, 200, res);
 
     res.status(200).json({

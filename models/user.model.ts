@@ -10,6 +10,9 @@ const assignedOrgsSchema = new mongoose.Schema({
   issueLink: {
     type: String,
   },
+  status: {
+    type: String,
+  },
 });
 
 const userSchema = new mongoose.Schema({

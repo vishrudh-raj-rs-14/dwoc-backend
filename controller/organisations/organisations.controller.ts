@@ -114,7 +114,8 @@ const createOrganisationProject = asyncHandler(
     }
     const project = await Project.create({
       name: req.body.name,
-      organisation: req.organisation._id,
+      organisation: req.organisation.id,
+      organisationName: req.organisation.name,
       techStack: req.body.techStack,
       description: req.body.description,
       miniDescription: req.body.miniDescription,

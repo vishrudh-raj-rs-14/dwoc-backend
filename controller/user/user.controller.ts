@@ -30,6 +30,9 @@ const protect = asyncHandler(async (req: any, res: any, next: any) => {
     res.status(403);
     return next(new Error("You must login to access this page"));
   }
+
+  console.log(token);
+
   const decoded: any = await jwtVerifyPromisified(
     token,
     process.env.JWT_SECRET as string,

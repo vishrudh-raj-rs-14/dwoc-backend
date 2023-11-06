@@ -10,6 +10,17 @@ const assignedOrgsSchema = new mongoose.Schema({
   issueLink: {
     type: String,
   },
+  project: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Project",
+  },
+  issueId: {
+    type: Number,
+  },
+  scored: {
+    type: Boolean,
+    default: false,
+  },
   status: {
     type: String,
   },

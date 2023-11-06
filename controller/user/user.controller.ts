@@ -34,14 +34,14 @@ const protect = asyncHandler(async (req: any, res: any, next: any) => {
 
   const decoded: any = await jwtVerifyPromisified(
     token,
-    process.env.JWT_SECRET as string,
+    process.env.JWT_SECRET as string
   );
   console.log(decoded);
-  const user = await User.findById(decoded.id);
+  const user = await User.findById(decoded.id).lean();
   if (!user) {
     res.status(401);
     return next(
-      new Error("The user with this credentials does not exist anymore"),
+      new Error("The user with this credentials does not exist anymore")
     );
   }
   req.user = user;
@@ -78,7 +78,7 @@ const register = asyncHandler(async (req: any, res: any, next: any) => {
     !req.body.phone,
     !req.body.address,
     !req.body.tshirtSize,
-    req.body.isOrg,
+    req.body.isOrg
   );
   if (
     !req.body.githubHandle ||
@@ -105,7 +105,7 @@ const register = asyncHandler(async (req: any, res: any, next: any) => {
     {
       new: true,
       runValidators: true,
-    },
+    }
   );
 
   return res.json(newUser);
@@ -135,7 +135,9 @@ const getProfile = asyncHandler(async (req: any, res: any, next: any) => {
 });
 
 const isLoggedIn = asyncHandler(async (req: any, res: any, next: any) => {
-  const user = await User.findById(String(req.user._id));
+  const user = await User.findById(String(req.user._id)).populate(
+    "assignedOrgs"
+  );
   if (!user) {
     res.status(404);
     throw new Error("User not found");
@@ -151,6 +153,8 @@ const isLoggedIn = asyncHandler(async (req: any, res: any, next: any) => {
     address: user.address,
     tshirtSize: user.tshirtSize,
     isAdmin: user.isAdmin,
+    assignedOrgs: user.assignedOrgs,
+    issuesTaken: user.assignedOrgs.length,
   });
 });
 
@@ -171,7 +175,7 @@ const updateProfile = asyncHandler(async (req: any, res: any, next: any) => {
     {
       new: true,
       runValidators: true,
-    },
+    }
   );
 
   return res.json(newUser);
@@ -184,7 +188,7 @@ const generateMockUsers = asyncHandler(
     return res.json({
       status: "success",
     });
-  },
+  }
 );
 
 const logout = asyncHandler(async (req: any, res: any, next: any) => {

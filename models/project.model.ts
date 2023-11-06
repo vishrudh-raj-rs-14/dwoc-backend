@@ -35,29 +35,6 @@ const projectSchema = new mongoose.Schema({
         `${props.value} is not a valid GitHub link! It should start with "https://github.com/".`,
     },
   },
-  year: {
-    type: Date,
-    required: true,
-    default: Date.now(),
-  },
-  Mentor: {
-    type: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-    required: true,
-  },
-  Mentee: {
-    type: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-    required: true,
-  },
 });
 
 const Project = mongoose.model("Project", projectSchema);

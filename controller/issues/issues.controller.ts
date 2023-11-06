@@ -14,7 +14,6 @@ const validateAssigned = expressAsyncHandler(async (req: any, res: any) => {
   });
 
   const issues = await response.data;
-  console.log(issues);
 
   const assignedOrgs = [];
   const assignedOrgs_temp = issues

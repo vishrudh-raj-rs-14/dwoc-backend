@@ -11,6 +11,9 @@ const validateAssigned = expressAsyncHandler(async (req: any, res: any) => {
   const response = await axios({
     url: `https://api.github.com/repos/${owner}/${repoName}/issues?labels=dwoc`,
     method: "get",
+    headers: {
+      Authorization: `Bearer ${process.env.GITHUB_API_TOKEN}`,
+    },
   });
   const issues = await response.data;
 
@@ -101,7 +104,9 @@ const validateClose = expressAsyncHandler(async (req: any, res: any) => {
   const responsee = await axios({
     url: `https://api.github.com/repos/${owner}/${repoName}/issues?state=closed&sort=updated`,
     method: "get",
-    headers: { Authorization: "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" },
+    headers: {
+      Authorization: `Bearer ${process.env.GITHUB_API_TOKEN}`,
+    },
   });
   const issue = await responsee.data;
   let status = 0;

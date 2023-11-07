@@ -78,7 +78,9 @@ const validateAssigned = expressAsyncHandler(async (req: any, res: any) => {
     });
   }
 
-  return res.status(201).json({
+  // Take care of 0 length in frontend
+
+  return res.status(200).json({
     status: "success",
     data: issueList,
   });
@@ -87,11 +89,13 @@ const validateAssigned = expressAsyncHandler(async (req: any, res: any) => {
 const getIssues = expressAsyncHandler(async (req: any, res: any) => {
   const user_id = req.user;
   const user = await User.findById(user_id);
-  const data = user?.assignedOrgs;
+  const assignedOrgs = user?.assignedOrgs;
 
   return res.status(200).json({
     status: "success",
-    data,
+    data: {
+      assignedOrgs
+    },
   });
 });
 

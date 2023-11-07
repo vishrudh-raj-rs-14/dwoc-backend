@@ -60,7 +60,7 @@ const createOrganisation = asyncHandler(async (req: any, res: any) => {
 const getAllOrganisations = asyncHandler(async (req: any, res: any) => {
   const organisations = await Organisation.find({ isAccepted: "ACCEPTED" });
 
-  return res.status(201).json({
+  return res.status(200).json({
     status: "success",
     data: {
       organisations,
@@ -86,9 +86,11 @@ const getOrganisationProjects = asyncHandler(
       organisation: new mongoose.Types.ObjectId(req.organisation._id),
     }).populate("organisation");
 
-    return res.status(201).json({
+    return res.status(200).json({
       status: "success",
-      projects,
+      data: {
+        projects
+      },
     });
   }
 );

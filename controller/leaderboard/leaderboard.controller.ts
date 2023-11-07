@@ -25,13 +25,17 @@ const getLeaderboard = asyncHandler(async (req: any, res: any) => {
       return String(ele._id) != String(curUser._id);
     });
 
-  return res.status(201).json({
+  console.log(allUsers);
+
+  return res.status(200).json({
     status: "success",
-    count: users.length,
-    currentUser: curUser,
-    leaderboard: allUsers,
-    page: page,
-    totalPages: totalPages,
+    data: {
+      count: users.length,
+      currentUser: curUser,
+      leaderboard: allUsers,
+      page: page,
+      totalPages: totalPages,
+    }
   });
 });
 

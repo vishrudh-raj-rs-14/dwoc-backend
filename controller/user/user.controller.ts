@@ -108,7 +108,12 @@ const register = asyncHandler(async (req: any, res: any, next: any) => {
     }
   );
 
-  return res.json(newUser);
+  return res.status(201).json({
+    status: "success",
+    data: {
+      newUser
+    },
+  });
 });
 
 const getProfile = asyncHandler(async (req: any, res: any, next: any) => {

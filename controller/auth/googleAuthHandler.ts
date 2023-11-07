@@ -17,14 +17,14 @@ const CreateAndSendToken = (user: any, statusCode: Number, res: any) => {
   const cookieOptions = {
     expires: new Date(
       Date.now() +
-        Number(process.env.JWT_COOKIE_EXPIRES_IN) * 24 * 60 * 60 * 1000
+        Number(process.env.JWT_COOKIE_EXPIRES_IN) * 24 * 60 * 60 * 1000,
     ),
 
     httpOnly: true,
   };
 
   //   if (process.env.NODE_ENV === "production") cookieOptions.secure = true;
-  res.cookie("jwt", token, cookieOptions);
+  res.cookie("dwocToken", token, cookieOptions);
 
   user.password = undefined;
 };
@@ -59,7 +59,7 @@ const getGoogleUser = async ({ id_token, access_token }: any) => {
         header: {
           Authorization: `Bearer ${id_token}`,
         },
-      }
+      },
     );
 
     return res.data;
@@ -74,7 +74,7 @@ const findAndUpdateUser = async (query: any, update: any, options: any) => {
 
 const googleOauthHandler = async (req: any, res: any, next: any) => {
   try {
-    const code = req.query.code;
+    const code = req.body.code;
 
     const { id_token, access_token } = await getGoogleOauthTokens(code);
 
@@ -86,28 +86,47 @@ const googleOauthHandler = async (req: any, res: any, next: any) => {
         message: "google account is not verified",
       });
     }
-    const user = await findAndUpdateUser(
-      {
-        email: googleUser.email,
-      },
-      {
+    const user = await User.findOne({ email: googleUser.email });
+    if (user && req.body.type == "signup") {
+      res.status(409);
+      return next(new Error("User already exists"));
+    }
+    if (!user && req.body.type == "login") {
+      res.status(409);
+      return next(new Error("Sign Up before Logging In"));
+    }
+    let newUser = user;
+    if (req.body.type == "signup") {
+      newUser = await User.create({
         email: googleUser.email,
         name: googleUser.name,
-      },
-      {
-        upsert: true,
-        new: true,
-      }
-    );
-    CreateAndSendToken(user, 200, res);
-    // res.redirect("/");
-    console.log(user);
+        isOrg: req.body.role === "ORGANIZATION" ? true : false,
+      });
+    }
+
+    // const user = await findAndUpdateUser(
+    //   {
+    //     email: googleUser.email,
+    //   },
+    //   {
+    //     email: googleUser.email,
+    //     name: googleUser.name,
+    //     isOrg: req.body.role === "ORGANIZATION" ? true : false,
+    //   },
+    //   {
+    //     upsert: true,
+    //     new: true,
+    //   }
+    // );
+
+    CreateAndSendToken(newUser, 200, res);
 
     res.status(200).json({
       status: "success",
-      message: "Google auth working",
+      user: newUser,
     });
   } catch (err) {
+    console.log(err);
     res.status(404).json({
       status: "fail",
       message: err,

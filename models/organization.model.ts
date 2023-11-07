@@ -19,10 +19,18 @@ const organisationSchema = new mongoose.Schema({
   year: {
     type: Date,
     required: true,
+    default: Date.now(),
   },
   githubUrl: {
     type: String,
     required: true,
+    validate: {
+      validator: function (v: string) {
+        return v.startsWith("https://github.com/");
+      },
+      message: (props: { value: string }) =>
+        `${props.value} is not a valid GitHub link! It should start with "https://github.com/".`,
+    },
   },
   description: {
     type: String,
@@ -32,22 +40,10 @@ const organisationSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  mentors: {
-    type: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-  },
   isAccepted: {
     type: String,
     enum: ["PENDING", "REJECTED", "ACCEPTED"],
     default: "PENDING",
-  },
-  feedBack: {
-    type: String,
-    default: "",
   },
   orgType: {
     type: String,

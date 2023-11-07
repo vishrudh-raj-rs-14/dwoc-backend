@@ -27,28 +27,13 @@ const projectSchema = new mongoose.Schema({
   githubUrl: {
     type: String,
     required: true,
-  },
-  year: {
-    type: Date,
-    required: true,
-  },
-  Mentor: {
-    type: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+    validate: {
+      validator: function (v: string) {
+        return v.startsWith("https://github.com/");
       },
-    ],
-    required: true,
-  },
-  Mentee: {
-    type: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-    required: true,
+      message: (props: { value: string }) =>
+        `${props.value} is not a valid GitHub link! It should start with "https://github.com/".`,
+    },
   },
 });
 

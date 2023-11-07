@@ -4,7 +4,6 @@ import Project from "../../models/project.model";
 
 const getAllProjects = expressAsyncHandler(async (req: any, res: any) => {
   const projects = await Project.find().populate("organisation");
-
   return res.status(201).json({
     status: "success",
     data: {
@@ -16,7 +15,12 @@ const getAllProjects = expressAsyncHandler(async (req: any, res: any) => {
 const getProject = expressAsyncHandler(async (req: any, res: any) => {
   const project = await Project.findById(req.params.id);
 
-  console.log(project);
+  if (!project) {
+    return res.status(404).json({
+      status: "fail",
+      message: "Project not found",
+    });
+  }
 
   return res.status(201).json({
     status: "success",

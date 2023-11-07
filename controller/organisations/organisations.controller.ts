@@ -150,6 +150,12 @@ const deleteOrganisationProject = asyncHandler(
       );
     }
 
+    const project = await Project.findById(req.params.id);
+    if (!project) {
+      res.status(404);
+      return next(new Error("Project not found"));
+    }
+
     await Project.deleteOne({
       _id: req.params.id,
     });

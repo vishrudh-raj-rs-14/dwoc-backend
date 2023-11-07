@@ -4,7 +4,7 @@ import User from "../../models/user.model";
 import axios from "axios";
 
 const validateAssigned = expressAsyncHandler(async (req: any, res: any) => {
-  const user = await User.findById(req.user.id);
+  const user = req.user;
   const urlSegments = req.body.repoUrl.split("/");
   const owner = urlSegments[urlSegments.length - 2];
   const repoName = urlSegments[urlSegments.length - 1];
@@ -12,21 +12,15 @@ const validateAssigned = expressAsyncHandler(async (req: any, res: any) => {
     url: `https://api.github.com/repos/${owner}/${repoName}/issues?labels=dwoc`,
     method: "get",
   });
-
   const issues = await response.data;
 
-  const assignedOrgs = [];
-  for (let i = 0; i < issues.length; i++) {
-    const issue = issues[i];
-    if (user?.assignedOrgs && user?.assignedOrgs.length > 0) {
-      const org = user?.assignedOrgs.find((organisation: any) => {
-        return organisation.id === issue.id;
-      });
-      if (org) {
-        assignedOrgs.push(org);
-      }
-    }
+  let issueList = (user?.assignedOrgs as any) || [];
+  if (issueList && issueList.length > 0) {
+    issueList = issueList.filter((issue: any) => {
+      return !issues.some((ele: any) => ele.id === issue.issueId);
+    });
   }
+
   const assignedOrgs_temp = issues
     .filter((issue: any) => {
       return issue.assignees.some(
@@ -41,25 +35,23 @@ const validateAssigned = expressAsyncHandler(async (req: any, res: any) => {
       project: req.body.projectId,
       status: "Opened",
     }));
-  const issue = assignedOrgs.find(
-    (issue: any) => issue.id === assignedOrgs_temp[0].id
-  );
-  if (issue) {
+
+  if (assignedOrgs_temp.length == 0) {
     return res.status(400).json({
       status: "fail",
-      message: "Issue already assigned",
+      message: "No issue assigned",
     });
   }
-  let c = 0;
+  // let c = 0;
   for (let i = 0; i < assignedOrgs_temp.length; i++) {
     const issue = assignedOrgs_temp[i];
     if (issue) {
-      c += 1;
-      assignedOrgs.push(issue);
+      issueList.push(issue);
     }
   }
 
-  console.log(assignedOrgs);
+  console.log(issueList, assignedOrgs_temp);
+  // console.log(assignedOrgs);
   // if (c == 0 && assignedOrgs.length > 0) {
   //   return res.status(400).json({
   //     status: "fail",
@@ -69,23 +61,23 @@ const validateAssigned = expressAsyncHandler(async (req: any, res: any) => {
 
   await User.findByIdAndUpdate(
     user?._id,
-    { assignedOrgs },
+    { assignedOrgs: issueList },
     {
       new: true,
       runValidators: true,
     }
   );
 
-  if (assignedOrgs.length == 0) {
+  if (assignedOrgs_temp.length == 0) {
     return res.status(400).json({
       status: "fail",
-      message: "No issue assigned",
+      message: "No issue assigned from this project",
     });
   }
 
   return res.status(201).json({
     status: "success",
-    data: assignedOrgs,
+    data: issueList,
   });
 });
 
@@ -101,7 +93,7 @@ const getIssues = expressAsyncHandler(async (req: any, res: any) => {
 });
 
 const validateClose = expressAsyncHandler(async (req: any, res: any) => {
-  const user = await User.findById(req.user.id);
+  const user = req.user;
   const urlSegments = req.body.repoLink.split("/");
   const owner = urlSegments[urlSegments.length - 2];
   const repoName = urlSegments[urlSegments.length - 1];
@@ -112,11 +104,15 @@ const validateClose = expressAsyncHandler(async (req: any, res: any) => {
     headers: { Authorization: "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" },
   });
   const issue = await responsee.data;
+  let status = 0;
   let scoreval = 0;
   const closed: any = [];
+
   issue.map((el: any) => {
-    if (el.title == req.params.title) {
+    if (el.id == req.body.issueId) {
+      status = 1;
       if (el.assignees[0].login === user?.githubHandle) {
+        status = 2;
         // console.log(
         //   `${user?.name} closed the PR and successfully solved the issue!!!`
         // );
@@ -131,7 +127,6 @@ const validateClose = expressAsyncHandler(async (req: any, res: any) => {
   });
 
   const length = issue.length;
-  let status;
   const assignedOrgs = user?.assignedOrgs;
   let finalStatus = "Opened";
   console.log(closed, assignedOrgs);
@@ -142,26 +137,59 @@ const validateClose = expressAsyncHandler(async (req: any, res: any) => {
         finalStatus = "Closed";
         if (!data.scored) {
           score += scoreval;
+          status = 4;
+        } else {
+          status = 3;
         }
         data.scored = true;
-      } else {
-        // console.log(data.project, req.body.projectId);
-        if (String(data.project) == String(req.body.projectId)) {
-          finalStatus = "Open";
-          data.status = "Open";
-        }
       }
+      // else {
+      //   // console.log(data.project, req.body.projectId);
+      //   if (String(data.project) == String(req.body.projectId)) {
+      //     finalStatus = "Open";
+      //     data.status = "Open";
+      //   }
+      // }
     });
 
     // if()
     await User.findByIdAndUpdate(
-      user?.id,
+      String(user._id),
       { assignedOrgs, score },
       {
         new: true,
         runValidators: true,
       }
     );
+  }
+
+  console.log(status);
+
+  if (status == 0) {
+    return res.status(400).json({
+      status: "fail",
+      message: "No such issue was closed",
+    });
+  } else if (status == 1) {
+    return res.status(400).json({
+      status: "fail",
+      message: "You did not close the issue",
+    });
+  } else if (status == 2) {
+    return res.status(200).json({
+      status: "success",
+      message: "You closed the issue",
+    });
+  } else if (status == 3) {
+    return res.status(400).json({
+      status: "fail",
+      message: "You have already scored for this issue",
+    });
+  } else if (status == 4) {
+    return res.status(200).json({
+      status: "success",
+      message: "You closed the issue and scored",
+    });
   }
 
   return res.status(200).json({

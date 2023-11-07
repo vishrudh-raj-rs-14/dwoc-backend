@@ -25,8 +25,6 @@ const getLeaderboard = asyncHandler(async (req: any, res: any) => {
       return String(ele._id) != String(curUser._id);
     });
 
-  console.log(allUsers);
-
   return res.status(201).json({
     status: "success",
     count: users.length,

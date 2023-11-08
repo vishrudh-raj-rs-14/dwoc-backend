@@ -4,7 +4,8 @@ import Project from "../../models/project.model";
 
 const getAllProjects = expressAsyncHandler(async (req: any, res: any) => {
   const projects = await Project.find().populate("organisation");
-  return res.status(201).json({
+
+  return res.status(200).json({
     status: "success",
     data: {
       projects,
@@ -22,7 +23,7 @@ const getProject = expressAsyncHandler(async (req: any, res: any) => {
     });
   }
 
-  return res.status(201).json({
+  return res.status(200).json({
     status: "success",
     data: {
       project,

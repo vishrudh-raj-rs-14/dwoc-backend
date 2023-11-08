@@ -35,6 +35,13 @@ const userSchema = new mongoose.Schema({
   },
   githubHandle: {
     type: String,
+    validate: {
+      validator: function (v: string) {
+        return !v.includes(" ");
+      },
+      message: (props: { value: string }) =>
+        `${props.value} is not a valid GitHub handle! It should not contain any spaces.`,
+    },
   },
   isOrg: {
     type: Boolean,

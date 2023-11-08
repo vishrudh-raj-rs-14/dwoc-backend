@@ -30,13 +30,10 @@ const protect = asyncHandler(async (req: any, res: any, next: any) => {
     return next(new Error("You must login to access this page"));
   }
 
-  console.log(token);
-
   const decoded: any = await jwtVerifyPromisified(
     token,
     process.env.JWT_SECRET as string
   );
-  console.log(decoded);
   const user = await User.findById(decoded.id).lean();
   if (!user) {
     res.status(401);
@@ -72,33 +69,31 @@ const register = asyncHandler(async (req: any, res: any, next: any) => {
       message: "User already registered",
     });
   }
-  console.log(
-    !req.body.githubHandle,
-    !req.body.college,
-    !req.body.phone,
-    !req.body.address,
-    !req.body.tshirtSize,
-    req.body.isOrg
-  );
   if (
-    !req.body.githubHandle ||
-    !req.body.college ||
+    !req.body.githubHandle.trim() ||
+    !req.body.college.trim() ||
     !req.body.phone ||
-    !req.body.address ||
+    !req.body.address.trim() ||
     !req.body.tshirtSize ||
     typeof req.body.isOrg !== "boolean"
   ) {
     res.status(400);
     throw new Error("Please fill all the fields");
   }
+
+  if (req.body.githubHandle.trim().includes(" ")) {
+    res.status(400);
+    throw new Error("Github handle cannot contain spaces");
+  }
+
   const newUser = await User.findByIdAndUpdate(
     String(req.user._id),
     {
-      githubHandle: req.body.githubHandle,
-      college: req.body.college,
+      githubHandle: req.body.githubHandle.trim(),
+      college: req.body.college.trim(),
       phone: req.body.phone,
       isOrg: req.body.isOrg,
-      address: req.body.address,
+      address: req.body.address.trim(),
       tshirtSize: req.body.tshirtSize,
       isFilled: true,
     },
@@ -108,7 +103,12 @@ const register = asyncHandler(async (req: any, res: any, next: any) => {
     }
   );
 
-  return res.json(newUser);
+  return res.status(201).json({
+    status: "success",
+    data: {
+      newUser,
+    },
+  });
 });
 
 const getProfile = asyncHandler(async (req: any, res: any, next: any) => {
@@ -159,18 +159,19 @@ const isLoggedIn = asyncHandler(async (req: any, res: any, next: any) => {
 });
 
 const updateProfile = asyncHandler(async (req: any, res: any, next: any) => {
-  const user = await User.findById(req.params.userId);
+  const user = req.user;
   if (!user) {
     res.status(404);
     throw new Error("User not found");
   }
-  const newUser = await User.findByIdAndUpdate(
-    req.params.userId,
+  const newUser = await User.findOneAndUpdate(
+    { _id: req.user._id },
     {
       college: req.body.college,
       phone: req.body.phone,
       address: req.body.address,
       tshirtSize: req.body.tshirtSize,
+      githubHandle: req.body.githubHandle,
     },
     {
       new: true,
@@ -178,7 +179,7 @@ const updateProfile = asyncHandler(async (req: any, res: any, next: any) => {
     }
   );
 
-  return res.json(newUser);
+  return res.json({ status: "success", user: newUser });
 });
 
 const generateMockUsers = asyncHandler(
